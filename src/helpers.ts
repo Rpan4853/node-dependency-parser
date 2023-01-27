@@ -109,14 +109,14 @@ function getSectionMarkdown(
   if (section.length < 1) {
     return ``;
   }
-  return `##### ${header}\n${section
+  return `>##### ${header}\n${section
     .map(
       (dep) =>
-        `* \`${dep.name}: ${dep.version}\`${
+        `>* \`${dep.name}: ${dep.version}\`${
           isUpdate ? `\`=> ${dep.prevVersion}\`` : ``
         }`
     )
-    .join(`\n`)}\n
+    .join(`\n`)}
   `;
 }
 
@@ -131,12 +131,11 @@ function getDependenciesMarkdown(
   const added = getSectionMarkdown(dependencies.added, "Added");
   const removed = getSectionMarkdown(dependencies.removed, "Removed");
   const updated = getSectionMarkdown(dependencies.updated, "Updated", true);
-  return `${header}${added}${removed}${updated}`;
+  return `${header}${added}${removed}${updated}`.trim();
 }
 
 function getFileMarkdown(file: FileDiff) {
-  console.log("file", file);
-  const header = `### ${file.fileName} \n`;
+  const header = `### \`${file.fileName}\` \n`;
   const dependencies = getDependenciesMarkdown(
     file.dependencies,
     "Dependencies"
@@ -145,7 +144,7 @@ function getFileMarkdown(file: FileDiff) {
     file.devDependencies,
     "Dev Dependencies"
   );
-  return header + dependencies + devDependencies;
+  return `${header}${dependencies}\n${devDependencies}\n`;
 }
 
 export async function writeChangelog(

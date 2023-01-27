@@ -104,7 +104,6 @@ async function parseCommitDependenciesDiff() {
       }
     }
   }
-  console.log(commitDependenciesDiffs);
   writeChangelog(latestCommit, commitDependenciesDiffs);
 }
 
