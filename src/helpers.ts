@@ -1,7 +1,12 @@
-import { createReadStream } from "fs";
-import { DiffLine } from "nodegit";
+import { createReadStream, createWriteStream } from "fs";
+import { Commit, DiffLine } from "nodegit";
 import { createInterface } from "readline";
-import { DependencyDiff, DependencyMapping, FileDiff } from ".";
+import {
+  CommitDiffMapping,
+  DependencyDiff,
+  DependencyMapping,
+  FileDiff,
+} from ".";
 
 export async function getJsonFieldBounds(
   filePath: string,
@@ -93,4 +98,13 @@ export function parseDependencyDiff(
     dependencyDiff[dependency.type].push(dependency);
   }
   return dependencyDiff;
+}
+
+export async function writeChangelog(
+  latestCommit: Commit,
+  commitDependenciesDiffMapping: CommitDiffMapping
+) {
+  var stream = createWriteStream("CHANGELOG.md", { flags: "w" });
+  stream.write(`#${latestCommit.message().trim()}\n##Dependency Changes`);
+  stream.end();
 }

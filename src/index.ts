@@ -4,6 +4,7 @@ import {
   getJsonFieldBounds,
   updatePatchChanges,
   parseDependencyDiff,
+  writeChangelog,
 } from "./helpers";
 //Removed dependencies, added dependencies, updated dependencies (versions)
 
@@ -34,7 +35,7 @@ export interface CommitDiffMapping {
 
 async function parseCommitDependenciesDiff() {
   //map file path to added, deleted, and/or updateed dependencies
-  const commitDiffMapping: CommitDiffMapping = {};
+  const commitDependenciesDiffMapping: CommitDiffMapping = {};
 
   const repo = await Repository.open(path.resolve(__dirname, "../.git"));
   const currentBranchReference = await repo.getCurrentBranch();
@@ -93,7 +94,7 @@ async function parseCommitDependenciesDiff() {
         const devDependenciesDiff = parseDependencyDiff(patchDevChanges);
 
         if (dependenciesDiff || devDependenciesDiff) {
-          commitDiffMapping[patch.newFile().path()] = {
+          commitDependenciesDiffMapping[patch.newFile().path()] = {
             dependencies: parseDependencyDiff(patchChanges),
             devDependencies: parseDependencyDiff(patchDevChanges),
           };
@@ -101,7 +102,8 @@ async function parseCommitDependenciesDiff() {
       }
     }
   }
-  console.log(commitDiffMapping);
+  console.log(commitDependenciesDiffMapping);
+  writeChangelog(latestCommit, commitDependenciesDiffMapping);
 }
 
 parseCommitDependenciesDiff();
