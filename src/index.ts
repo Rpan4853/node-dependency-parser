@@ -1,6 +1,10 @@
 import { Repository } from "nodegit";
 import path from "path";
-import { getJsonFieldBounds, updatePatchChanges } from "./helpers";
+import {
+  getJsonFieldBounds,
+  updatePatchChanges,
+  parseDependencyDiff,
+} from "./helpers";
 //Removed dependencies, added dependencies, updated dependencies (versions)
 
 export interface Dependency {
@@ -14,21 +18,21 @@ export interface DependencyMapping {
   [name: string]: Dependency;
 }
 
-export interface DepdendencyDiff {
+export interface DependencyDiff {
   removed: Dependency[];
   added: Dependency[];
   updated: Dependency[];
 }
 
 export interface FileDiff {
-  dependencies: DepdendencyDiff[];
-  devDependencies: DepdendencyDiff[];
+  dependencies: DependencyDiff;
+  devDependencies: DependencyDiff;
 }
 export interface CommitDiffMapping {
   [fileName: string]: FileDiff;
 }
 
-async function parseDependeciesDiff() {
+async function parseCommitDependenciesDiff() {
   //map file path to added, deleted, and/or updateed dependencies
   const commitDiffMapping: CommitDiffMapping = {};
 
@@ -48,11 +52,11 @@ async function parseDependeciesDiff() {
         //get line ranges for depencies and devDependencies
         const dependenciesBounds = await getJsonFieldBounds(
           patch.newFile().path(),
-          `"dependencies`,
+          `"dependencies`
         );
         const devDependenciesBounds = await getJsonFieldBounds(
           patch.newFile().path(),
-          `"devDependencies"`,
+          `"devDependencies"`
         );
 
         const hunks = await patch.hunks();
@@ -84,9 +88,15 @@ async function parseDependeciesDiff() {
             }
           }
         }
+
+        commitDiffMapping[patch.newFile().path()] = {
+          dependencies: parseDependencyDiff(patchChanges),
+          devDependencies: parseDependencyDiff(patchDevChanges),
+        };
       }
     }
   }
+  console.log(commitDiffMapping);
 }
 
-parseDependeciesDiff();
+parseCommitDependenciesDiff();

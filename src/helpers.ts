@@ -1,11 +1,11 @@
 import { createReadStream } from "fs";
 import { DiffLine } from "nodegit";
 import { createInterface } from "readline";
-import { DependencyMapping } from ".";
+import { DependencyDiff, DependencyMapping, FileDiff } from ".";
 
 export async function getJsonFieldBounds(
   filePath: string,
-  fieldName: string,
+  fieldName: string
 ): Promise<{ start: number; end: number }> {
   const fileStream = createReadStream(filePath);
 
@@ -32,11 +32,11 @@ export async function getJsonFieldBounds(
 
 export function updatePatchChanges(
   patchChanges: DependencyMapping,
-  line: DiffLine,
+  line: DiffLine
 ): void {
   const parsedLine = line.content().trim().split(" ");
   const [name, version] = parsedLine.map((val) =>
-    val.at(-1) == "," ? val.slice(0, -1) : val,
+    val.at(-1) == "," ? val.slice(0, -1) : val
   );
   //line was removed
   if (line.origin() == 45) {
@@ -73,4 +73,18 @@ export function updatePatchChanges(
       };
     }
   }
+}
+
+export function parseDependencyDiff(
+  patchChanges: DependencyMapping
+): DependencyDiff {
+  const dependencyDiff: DependencyDiff = {
+    removed: [],
+    added: [],
+    updated: [],
+  };
+  for (const [name, dependency] of Object.entries(patchChanges)) {
+    dependencyDiff[dependency.type].push(dependency);
+  }
+  return dependencyDiff;
 }
