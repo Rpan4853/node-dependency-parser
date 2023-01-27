@@ -105,6 +105,10 @@ export async function writeChangelog(
   commitDependenciesDiffMapping: CommitDiffMapping
 ) {
   var stream = createWriteStream("CHANGELOG.md", { flags: "w" });
-  stream.write(`#${latestCommit.message().trim()}\n##Dependency Changes`);
+  stream.write(
+    `# Latest Commit: ${latestCommit.message().trim()} (${latestCommit
+      .sha()
+      .trim()}) \n## Dependency Changes`
+  );
   stream.end();
 }
