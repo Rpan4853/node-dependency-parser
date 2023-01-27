@@ -30,9 +30,6 @@ export interface FileDiff {
   dependencies: DependencyDiff | null;
   devDependencies: DependencyDiff | null;
 }
-export interface CommitDiffMapping {
-  [fileName: string]: FileDiff;
-}
 
 async function parseCommitDependenciesDiff() {
   //map file path to added, deleted, and/or updateed dependencies
