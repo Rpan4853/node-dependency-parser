@@ -3,6 +3,7 @@ import { Commit, DiffLine } from "nodegit";
 import { createInterface } from "readline";
 import {
   CommitDiffMapping,
+  Dependency,
   DependencyDiff,
   DependencyMapping,
   FileDiff,
@@ -41,7 +42,7 @@ export function updatePatchChanges(
 ): void {
   const parsedLine = line.content().trim().split(" ");
   const [name, version] = parsedLine.map((val) =>
-    val.at(-1) == "," ? val.slice(0, -1) : val
+    val.at(-1) == "," || val.at(-1) == ":" ? val.slice(0, -1) : val
   );
   //line was removed
   if (line.origin() == 45) {
@@ -100,15 +101,68 @@ export function parseDependencyDiff(
   return dependencyDiff;
 }
 
+function getSectionMarkdown(
+  section: Dependency[],
+  header: string,
+  isUpdate?: boolean
+) {
+  if (section.length < 1) {
+    return ``;
+  }
+  return `##### ${header}\n${section
+    .map(
+      (dep) =>
+        `* \`${dep.name}: ${dep.version}\`${
+          isUpdate ? `\`=> ${dep.prevVersion}\`` : ``
+        }`
+    )
+    .join(`\n`)}\n
+  `;
+}
+
+function getDependenciesMarkdown(
+  dependencies: DependencyDiff | null,
+  title: string
+) {
+  if (!dependencies) {
+    return ``;
+  }
+  const header = `#### ${title} \n`;
+  const added = getSectionMarkdown(dependencies.added, "Added");
+  const removed = getSectionMarkdown(dependencies.removed, "Removed");
+  const updated = getSectionMarkdown(dependencies.updated, "Updated", true);
+  return `${header}${added}${removed}${updated}`;
+}
+
+function getFileMarkdown(file: FileDiff) {
+  console.log("file", file);
+  const header = `### ${file.fileName} \n`;
+  const dependencies = getDependenciesMarkdown(
+    file.dependencies,
+    "Dependencies"
+  );
+  const devDependencies = getDependenciesMarkdown(
+    file.devDependencies,
+    "Dev Dependencies"
+  );
+  return header + dependencies + devDependencies;
+}
+
 export async function writeChangelog(
   latestCommit: Commit,
-  commitDependenciesDiffMapping: CommitDiffMapping
+  commitDependenciesDiffs: FileDiff[]
 ) {
   var stream = createWriteStream("CHANGELOG.md", { flags: "w" });
   stream.write(
-    `# Latest Commit: ${latestCommit.message().trim()} (${latestCommit
-      .sha()
-      .trim()}) \n## Dependency Changes`
+    `# Latest Commit: ${latestCommit
+      .message()
+      .trim()} \n## Dependency Changes \n${
+      commitDependenciesDiffs.length > 0
+        ? commitDependenciesDiffs.map((file) => getFileMarkdown(file)).join(``)
+        : "#### No dependencies changed"
+    }
+    `
   );
+
   stream.end();
 }

@@ -26,6 +26,7 @@ export interface DependencyDiff {
 }
 
 export interface FileDiff {
+  fileName: string;
   dependencies: DependencyDiff | null;
   devDependencies: DependencyDiff | null;
 }
@@ -35,7 +36,7 @@ export interface CommitDiffMapping {
 
 async function parseCommitDependenciesDiff() {
   //map file path to added, deleted, and/or updateed dependencies
-  const commitDependenciesDiffMapping: CommitDiffMapping = {};
+  const commitDependenciesDiffs: FileDiff[] = [];
 
   const repo = await Repository.open(path.resolve(__dirname, "../.git"));
   const currentBranchReference = await repo.getCurrentBranch();
@@ -94,16 +95,17 @@ async function parseCommitDependenciesDiff() {
         const devDependenciesDiff = parseDependencyDiff(patchDevChanges);
 
         if (dependenciesDiff || devDependenciesDiff) {
-          commitDependenciesDiffMapping[patch.newFile().path()] = {
+          commitDependenciesDiffs.push({
+            fileName: patch.newFile().path().trim(),
             dependencies: parseDependencyDiff(patchChanges),
             devDependencies: parseDependencyDiff(patchDevChanges),
-          };
+          });
         }
       }
     }
   }
-  console.log(commitDependenciesDiffMapping);
-  writeChangelog(latestCommit, commitDependenciesDiffMapping);
+  console.log(commitDependenciesDiffs);
+  writeChangelog(latestCommit, commitDependenciesDiffs);
 }
 
 parseCommitDependenciesDiff();
