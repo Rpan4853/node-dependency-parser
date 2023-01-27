@@ -1,0 +1,18 @@
+{
+  "name": "node-dependency-parser",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:Rpan4853/node-dependency-parser.git",
+  "author": "rpan4853 <raymondpan12345@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "node ./bin/index.js",
+    "dev": "ts-node ./src/index.ts"
+  },
+  "dependencies": {
+    "@types/node": "^18.11.18",
+    "nodegit": "^0.28.0-alpha.20",
+    "typescript": "^4.9.4"
+  }
+}
