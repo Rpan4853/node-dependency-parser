@@ -25,8 +25,8 @@ export interface DependencyDiff {
 }
 
 export interface FileDiff {
-  dependencies: DependencyDiff;
-  devDependencies: DependencyDiff;
+  dependencies: DependencyDiff | null;
+  devDependencies: DependencyDiff | null;
 }
 export interface CommitDiffMapping {
   [fileName: string]: FileDiff;
@@ -89,10 +89,15 @@ async function parseCommitDependenciesDiff() {
           }
         }
 
-        commitDiffMapping[patch.newFile().path()] = {
-          dependencies: parseDependencyDiff(patchChanges),
-          devDependencies: parseDependencyDiff(patchDevChanges),
-        };
+        const dependenciesDiff = parseDependencyDiff(patchChanges);
+        const devDependenciesDiff = parseDependencyDiff(patchDevChanges);
+
+        if (dependenciesDiff || devDependenciesDiff) {
+          commitDiffMapping[patch.newFile().path()] = {
+            dependencies: parseDependencyDiff(patchChanges),
+            devDependencies: parseDependencyDiff(patchDevChanges),
+          };
+        }
       }
     }
   }
