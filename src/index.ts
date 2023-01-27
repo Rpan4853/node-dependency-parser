@@ -34,7 +34,6 @@ export interface FileDiff {
 async function parseCommitDependenciesDiff() {
   //map file path to added, deleted, and/or updateed dependencies
   const commitDependenciesDiffs: FileDiff[] = [];
-
   const repo = await Repository.open(path.resolve(__dirname, "../.git"));
   const currentBranchReference = await repo.getCurrentBranch();
   const latestCommit = await repo.getBranchCommit(currentBranchReference);
@@ -94,8 +93,8 @@ async function parseCommitDependenciesDiff() {
         if (dependenciesDiff || devDependenciesDiff) {
           commitDependenciesDiffs.push({
             fileName: patch.newFile().path().trim(),
-            dependencies: parseDependencyDiff(patchChanges),
-            devDependencies: parseDependencyDiff(patchDevChanges),
+            dependencies: dependenciesDiff,
+            devDependencies: devDependenciesDiff,
           });
         }
       }

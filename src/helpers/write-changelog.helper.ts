@@ -13,8 +13,8 @@ function getSectionMarkdown(
   return `>##### ${header}\n${section
     .map(
       (dep) =>
-        `>* \`${dep.name}: ${dep.version}\`${
-          isUpdate ? `\`=> ${dep.prevVersion}\`` : ``
+        `>* \`${dep.name}: ${dep.prevVersion}\`${
+          isUpdate ? `\`=> ${dep.version}\`` : ``
         }`
     )
     .join(`\n`)}
